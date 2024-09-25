@@ -181,7 +181,8 @@ cohort_selection <- cohort_selection_init |>
     -accepted,
     -previously_reviewed,
     -none_avail
-  )
+  ) |> 
+  arrange(cohort, status, division)
 
 # Summarize number of each grouping in each cohort
 pivot_summary <- function(x, column) {
