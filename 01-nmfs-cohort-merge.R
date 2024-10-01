@@ -1,40 +1,5 @@
-library(googlesheets4)
-library(dplyr)
-library(tidyr)
-
-gs4_auth(email = "andy@openscapes.org")
-
-signup_sheet <- "10zTz6i-ZuwnQhCTG63jRku0BtVwgc9e1tqnfGuiyM2c"
-signup_sheet_mentor_cp <- "1z8VWGExea-0X2olPVJINLXgimcweWIUMAuI7mU6UYKg"
-
-os_mainlist <- "10ub0NKrPa1phUa_X-Jxg8KYH57WGLaZzBN-vQT4e10o"
-
-
-is_true_v <- Vectorize(isTRUE)
-
-read_signup_sheet <- function(x, ...) {
-  sheet <- read_sheet(x, skip = 6, .name_repair = name_cleaner, ...)
-  sheet |>
-    mutate(
-      across(matches("^(cohort_)|(email)"), tolower),
-      across(where(is.logical), is_true_v) # convert NAs into FALSEs
-    )
-}
-
-name_cleaner <- function(x) {
-  x <- janitor::make_clean_names(x)
-  nms_tokens <- strsplit(x, "_")
-  vapply(
-    nms_tokens,
-    \(x) {
-      if (length(x) < 2) {
-        return(x)
-      }
-      paste(x[1:2], collapse = "_")
-    },
-    FUN.VALUE = ""
-  )
-}
+source("R/header.R")
+source("R/functions.R")
 
 ss_raw <- read_signup_sheet(signup_sheet)
 ss_mentors <- read_signup_sheet(signup_sheet_mentor_cp)
@@ -94,9 +59,7 @@ ss <- ss_raw |>
 #   cat(sep = ", ")
 
 ## Write to google sheet for further annotation
-worksheet <- paste0("annotated-signups_", Sys.Date())
-
-sheet_add(signup_sheet_mentor_cp, sheet = worksheet)
+sheet_add(signup_sheet_mentor_cp, sheet = annotated_ws)
 
 comments_df <- data.frame(
   comment = c(
@@ -108,7 +71,7 @@ comments_df <- data.frame(
 range_write(
   signup_sheet_mentor_cp,
   data = comments_df,
-  sheet = worksheet,
+  sheet = annotated_ws,
   range = "A1",
   col_names = FALSE
 )
@@ -116,6 +79,6 @@ range_write(
 range_write(
   signup_sheet_mentor_cp,
   data = ss,
-  sheet = worksheet,
+  sheet = annotated_ws,
   range = paste0("A", nrow(comments_df) + 2)
 )

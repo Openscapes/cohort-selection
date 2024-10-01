@@ -1,20 +1,10 @@
-library(googlesheets4)
-library(dplyr)
-library(tidyr)
-library(stringr)
-
-gs4_auth(email = "andy@openscapes.org")
-
-signup_sheet_mentor_cp <- "1z8VWGExea-0X2olPVJINLXgimcweWIUMAuI7mU6UYKg"
-
-is_true_v <- Vectorize(isTRUE)
-
-worksheet <- paste0("annotated-signups_2024-09-23")
+source("R/header.R")
+source("R/functions.R")
 
 ## Read back after further annotation by mentors
 ss_new <- read_sheet(
   signup_sheet_mentor_cp,
-  sheet = worksheet,
+  sheet = annotated_ws,
   skip = 3 # Verify this in the sheet
 )
 
@@ -36,6 +26,7 @@ ss_new <- ss_new |>
       !is_true_v(none_avail) ,
     ## fewer than 5 in a division, accept all
     priority = priority | (!is_true_v(none_avail) & division %in% small_divs),
+    # PIFSC can't do cohort B
     cohort_b = ifelse(is_true_v(division == "PIFSC"), "no", cohort_b)
   )
 
@@ -92,8 +83,7 @@ cohort_assigned |>
   print()
 # }
 
-## Fix allocation of teams:
-##   - no more than 18 across cohorts
+## Fix allocation of teams: no more than 18 across cohorts
 
 ## Big divisions
 max_total <- 18
@@ -181,68 +171,14 @@ cohort_selection <- cohort_selection_init |>
     -accepted,
     -previously_reviewed,
     -none_avail
-  )
+  ) |> 
+  arrange(cohort, status, division)
 
 # Summarize number of each grouping in each cohort
-pivot_summary <- function(x, column) {
-  x |>
-    count(status, {{ column }}, cohort) |>
-    pivot_wider(
-      names_from = cohort,
-      values_from = n,
-      names_prefix = "Cohort_",
-      values_fill = 0,
-    ) |>
-    mutate(total = Cohort_A + Cohort_B + Cohort_C) |> 
-    arrange(status, {{ column }})
-}
-
 accepted_summary <- pivot_summary(cohort_selection, status)
 division_summary <- pivot_summary(cohort_selection, division)
 si_name_summary <- pivot_summary(cohort_selection, si_name)
 team_name_summary <- pivot_summary(cohort_selection, team_name)
 
-## Write to google sheet for final selection
-final_worksheet <- paste0("final-selection_", Sys.Date())
-
 sheet_add(signup_sheet_mentor_cp, sheet = final_worksheet)
-
 write_sheet(cohort_selection, ss = signup_sheet_mentor_cp, sheet = final_worksheet)
-
-summary_sheet <- paste0("summary-", final_worksheet)
-sheet_add(signup_sheet_mentor_cp, sheet = summary_sheet)
-
-range_write(
-  signup_sheet_mentor_cp,
-  accepted_summary,
-  sheet = summary_sheet,
-  range = "A1"
-)
-
-range_write(
-  signup_sheet_mentor_cp,
-  division_summary,
-  sheet = summary_sheet,
-  range = "H1"
-)
-
-range_write(
-  signup_sheet_mentor_cp,
-  si_name_summary,
-  sheet = summary_sheet,
-  range = "O1"
-)
-
-range_write(
-  signup_sheet_mentor_cp,
-  team_name_summary,
-  sheet = summary_sheet,
-  range = "V1"
-)
-
-# TODO: 
-# - [x] Remove Fay Lab
-# - [ ] Summary of total signed up
-# - [ ] Write snippet to update summaries as mentors tweak cohort allocations
-# - [ ] Make locked "original version"
-# - [ ] Add a "selection notes" column
