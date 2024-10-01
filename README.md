@@ -8,7 +8,7 @@ We used a three part process:
 
 1. Create a google sheet with applicants' information from their sign-ups, and
 merge this with other sources of information that would help inform the selection
-process. Eg:
+process. This criteria is listed at https://nmfs-openscapes.github.io/champions.html#decision-criteria. Eg:
 
 - Whether or not the applicant is a supervisor or mentor
 - If they have participated in an Openscapes Champions program previously
