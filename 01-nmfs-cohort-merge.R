@@ -17,7 +17,8 @@ ss <- ss_raw |>
       select(email, cohort) |>
       group_by(email) |>
       summarise(prev_cohort = paste(cohort, collapse = " / ")),
-    by = c("email_address" = "email"), na_matches = "never"
+    by = c("email_address" = "email"),
+    na_matches = "never"
   ) |>
   mutate(
     prev_champion = !is.na(prev_cohort)
@@ -35,18 +36,19 @@ ss <- ss_raw |>
         supervisor,
         mentor,
         override_yes
-      ) |> 
+      ) |>
       mutate(
         previously_reviewed = TRUE
       ),
     by = "email_address"
   ) |>
   mutate(
-    si = si | grepl(
-      "(fdd)|(cefi)|(\\bsi\\b)|(\\bpam\\b)|(\\baa\\b)|(acoustics)|(omics)|(socioecon)",
-      paste(team_name, team_needs, briefly_describe),
-      ignore.case = TRUE
-    ),
+    si = si |
+      grepl(
+        "(fdd)|(cefi)|(\\bsi\\b)|(\\bpam\\b)|(\\baa\\b)|(acoustics)|(omics)|(socioecon)",
+        paste(team_name, team_needs, briefly_describe),
+        ignore.case = TRUE
+      ),
     new_hire = new_hire | grepl("new\\s+hire", team_needs, ignore.case = TRUE),
     previously_reviewed = is_true_v(previously_reviewed),
     notes = NA_character_

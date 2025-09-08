@@ -20,10 +20,14 @@ ss_new <- ss_new |>
     # Treat NA in cohort column as "no"
     across(starts_with("cohort_"), \(x) ifelse(is.na(x), "no", x)),
     new_office = grepl("(OPR)|(OST)|(AKRO)|(GARFO)", division),
-    points = is_true_v(new_hire) + is_true_v(si) + is_true_v(supervisor) + is_true_v(new_office),
+    points = is_true_v(new_hire) +
+      is_true_v(si) +
+      is_true_v(supervisor) +
+      is_true_v(new_office),
     none_avail = cohort_a == "no" & cohort_b == "no" & cohort_c == "no",
-    priority = ((!prev_champion & !is_true_v(mentor) & points > 0) | is_true_v(override_yes)) &
-      !is_true_v(none_avail) ,
+    priority = ((!prev_champion & !is_true_v(mentor) & points > 0) |
+      is_true_v(override_yes)) &
+      !is_true_v(none_avail),
     ## fewer than 5 in a division, accept all
     priority = priority | (!is_true_v(none_avail) & division %in% small_divs),
     # PIFSC can't do cohort B
@@ -63,7 +67,8 @@ ss_picked <- ss_new |>
   # cohort
   mutate(
     rand = rnorm(n()),
-    pick = cohort_weight > 0 & cohort_weight == max(cohort_weight) &
+    pick = cohort_weight > 0 &
+      cohort_weight == max(cohort_weight) &
       rand == max(rand[cohort_weight == max(cohort_weight)]) # break ties when equal weights (i.e., 2 or 3 "yes"s)
   )
 
@@ -136,7 +141,8 @@ cohort_selection <- cohort_selection_init |>
   mutate(
     # Move those removed to the end
     number = ifelse(
-      email_address %in% to_remove | 
+      email_address %in%
+        to_remove |
         grepl("fay lab", team_name, ignore.case = TRUE),
       999,
       number
@@ -171,7 +177,7 @@ cohort_selection <- cohort_selection_init |>
     -accepted,
     -previously_reviewed,
     -none_avail
-  ) |> 
+  ) |>
   arrange(cohort, status, division)
 
 # Summarize number of each grouping in each cohort
@@ -181,4 +187,8 @@ si_name_summary <- pivot_summary(cohort_selection, si_name)
 team_name_summary <- pivot_summary(cohort_selection, team_name)
 
 sheet_add(signup_sheet_mentor_cp, sheet = final_worksheet)
-write_sheet(cohort_selection, ss = signup_sheet_mentor_cp, sheet = final_worksheet)
+write_sheet(
+  cohort_selection,
+  ss = signup_sheet_mentor_cp,
+  sheet = final_worksheet
+)

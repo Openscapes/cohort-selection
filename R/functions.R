@@ -33,6 +33,6 @@ pivot_summary <- function(x, column) {
       names_prefix = "Cohort_",
       values_fill = 0,
     ) |>
-    mutate(total = Cohort_A + Cohort_B + Cohort_C) |> 
+    mutate(total = Cohort_A + Cohort_B + Cohort_C) |>
     arrange(status, {{ column }})
 }
