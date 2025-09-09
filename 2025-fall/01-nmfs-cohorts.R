@@ -51,6 +51,11 @@ ss |>
   pull(email_address) |>
   cat(sep = ", ")
 
+ss <- ss |>
+  mutate(across(starts_with("cohort_"), \(x) {
+    ifelse(grepl("yes", x), "yes", x)
+  }))
+
 # Get proportions of yes/no/probably by team
 cohort_prefs <- ss |>
   group_by(simple_team_name) |>
@@ -211,4 +216,37 @@ range_write(
   data = team_by_division_summary,
   sheet = "summaries",
   range = "N1"
+)
+
+## Quality check:
+## Make sure no one got assigned to a cohort they said "no" to.
+final_cohorts |>
+  filter(
+    cohort_pick == "a" &
+      cohort_a == "no" |
+      cohort_pick == "b" & cohort_b == "no" |
+      cohort_pick == "c" & cohort_c == "no"
+  )
+
+## How many got assigned to a cohort they said "unsure" to?
+unsure_summary <- final_cohorts |>
+  mutate(
+    unsure = cohort_pick == "a" &
+      cohort_a == "unsure" |
+      cohort_pick == "b" & cohort_b == "unsure" |
+      cohort_pick == "c" & cohort_c == "unsure"
+  ) |>
+  group_by(team_name = simple_team_name, cohort = cohort_pick) |>
+  summarise(
+    n = n(),
+    n_unsure = sum(unsure, na.rm = TRUE)
+  )
+
+View(unsure_summary)
+
+range_write(
+  ss = signup_sheet,
+  data = unsure_summary,
+  sheet = "summaries",
+  range = "R1"
 )
