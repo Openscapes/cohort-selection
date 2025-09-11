@@ -121,3 +121,9 @@ range_write(
   sheet = "post-edit-summaries",
   range = "N1"
 )
+
+## Create groups for seaside chats
+ss_edited |>
+  group_by(team_name) |>
+  summarise(members = paste(first_name, last_name, collapse = "; ")) |>
+  View()
