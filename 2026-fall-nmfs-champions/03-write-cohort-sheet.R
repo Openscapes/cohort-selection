@@ -15,7 +15,7 @@ cohorts_sheet <- "1C32ykwz1wJXMHN5RH_azqNL6jQvpSBN-44USgdSszMI"
 picks <- read_sheet(signup_sheet, sheet = "cohort-picks")
 
 stopifnot(
-  nrow(picks) == 104,
+  nrow(picks) == 106,
   !anyNA(picks$cohort_pick),
   all(picks$cohort_pick %in% c("a", "b", "c"))
 )
