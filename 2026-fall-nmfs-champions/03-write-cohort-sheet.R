@@ -54,9 +54,7 @@ range_write(
 
 ## Seaside Chats: pre-fill one row per team with the group name (col A)
 ## and its members (col E); description/point person/scheduling columns
-## are for the teams to complete themselves. Only teams with more than
-## one member are included — a "team" of one is not a peer group. Note
-## Agent-Coders spans cohorts A and B (the one intentional team split).
+## are for the teams to complete themselves.
 seaside_teams <- picks |>
   filter(!is.na(simple_team_name)) |>
   summarise(
