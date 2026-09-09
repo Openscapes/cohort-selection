@@ -44,8 +44,7 @@ ss <- ss_raw |>
     division = na_if(division, ""),
     parent_division = str_split_i(division, "[-/ ]", 1),
     # A few respondents named two offices at once (e.g. "NMFS OPR and WCR",
-    # "NWFSC/SWFSC", "OCED/AOML also on projects with SEFSC"). Take the
-    # first office listed as `parent_division` and flag for review.
+    # "NWFSC/SWFSC", "OCED/AOML also on projects with SEFSC").
     division_multi_office = str_detect(
       division_raw,
       regex("\\band\\b|also on", ignore_case = TRUE)
@@ -93,14 +92,12 @@ team_cohort_scores <- team_cohort_prefs |>
   ) |>
   pivot_wider(names_from = stat, values_from = value) |>
   mutate(
-    score = coalesce(yes, 0) + 0.5 * coalesce(unsure, 0),
-    has_info = !is.na(yes) | !is.na(unsure)
+    score = coalesce(yes, 0) + 0.5 * coalesce(unsure, 0)
   )
 
 ## Assign cohorts for teams first, using the highest score, and if there's a
 ## tie, randomly select one of the tied cohorts.
 team_cohort_selections <- team_cohort_scores |>
-  mutate(has_any_team_info = any(has_info), .by = simple_team_name) |>
   group_by(simple_team_name) |>
   slice_max(order_by = score, n = 1, with_ties = TRUE) |>
   slice_sample(n = 1) |>
@@ -306,13 +303,43 @@ View(parent_division_by_cohort)
 
 ## Uncomment once the assignments above have been reviewed.
 # write_sheet(final_cohorts, ss = signup_sheet, sheet = "cohort-picks")
-#
+
 # sheet_delete(ss = signup_sheet, sheet = "summaries")
 # sheet_add(ss = signup_sheet, sheet = "summaries")
-#
-# range_write(ss = signup_sheet, data = cohort_summary, sheet = "summaries", range = "A1")
-# range_write(ss = signup_sheet, data = parent_division_summary, sheet = "summaries", range = "D1")
-# range_write(ss = signup_sheet, data = division_summary, sheet = "summaries", range = "G1")
-# range_write(ss = signup_sheet, data = team_summary, sheet = "summaries", range = "K1")
-# range_write(ss = signup_sheet, data = team_by_division_summary, sheet = "summaries", range = "N1")
-# range_write(ss = signup_sheet, data = parent_division_by_cohort, sheet = "summaries", range = "R1")
+
+# range_write(
+#   ss = signup_sheet,
+#   data = cohort_summary,
+#   sheet = "summaries",
+#   range = "A1"
+# )
+# range_write(
+#   ss = signup_sheet,
+#   data = parent_division_summary,
+#   sheet = "summaries",
+#   range = "D1"
+# )
+# range_write(
+#   ss = signup_sheet,
+#   data = division_summary,
+#   sheet = "summaries",
+#   range = "G1"
+# )
+# range_write(
+#   ss = signup_sheet,
+#   data = team_summary,
+#   sheet = "summaries",
+#   range = "K1"
+# )
+# range_write(
+#   ss = signup_sheet,
+#   data = team_by_division_summary,
+#   sheet = "summaries",
+#   range = "N1"
+# )
+# range_write(
+#   ss = signup_sheet,
+#   data = parent_division_by_cohort,
+#   sheet = "summaries",
+#   range = "R1"
+# )
